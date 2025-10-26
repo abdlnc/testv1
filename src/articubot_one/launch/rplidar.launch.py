@@ -1,0 +1,20 @@
+import os
+from launch import LaunchDescription
+from launch_ros.actions import Node
+
+def generate_launch_description():
+
+    return LaunchDescription([
+
+        Node(
+            package='rplidar_ros',
+            executable='rplidar_c1_launch.py',
+            output='screen',
+            parameters=[{
+                'serial_port': '/dev/serial/ttyUSB0',
+                'frame_id': 'laser',
+                'angle_compensate': True,
+                'scan_mode': 'Standard'
+            }]
+        )
+    ])

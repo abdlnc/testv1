@@ -1,0 +1,66 @@
+# Configuration for robot_localization EKF
+# See http://docs.ros.org/en/jazzy/api/robot_localization/html/state_estimation_nodes.html
+
+ekf_filter_node:
+  ros__parameters:
+    frequency: 30.0 # Match your expected update rate
+
+    # Usually map->odom is published by SLAM/AMCL, odom->base_link by EKF
+    map_frame: map              
+    odom_frame: odom            # Output frame
+    base_link_frame: base_link  # Robot's base frame
+    world_frame: odom           # Use odom as world frame for EKF
+
+    two_d_mode: true # Assuming your robot operates in 2D
+
+    # --- Sensor Inputs ---
+    # We don't have real wheel odometry, so we'll fuse cmd_vel 
+    # as a velocity input (less ideal, but better than nothing)
+    # OR, we could create a dummy odometry publisher based on cmd_vel.
+    # Let's try fusing IMU only for orientation first, and potentially 
+    # add a dummy velocity source later if needed.
+
+    # Input 0: IMU Data
+    imu0: /imu/data # The topic your MPU6050 driver publishes on (ADJUST TOPIC NAME)
+    imu0_config: [false, false, false, # X, Y, Z position
+                  true,  true,  true,  # Roll, Pitch, Yaw orientation
+                  false, false, false, # X, Y, Z velocity
+                  true,  true,  true,  # Roll, Pitch, Yaw velocity (gyro)
+                  true,  true,  false] # X, Y, Z acceleration (set Z to false in 2D)
+    imu0_differential: false # Measure absolute orientation
+    imu0_relative: false
+    imu0_queue_size: 10
+    # If IMU provides magnetic field (magnetometer), remove _nomag in topic name
+    # imu0_remove_gravitational_acceleration: true # Usually needed
+
+    # --- Odometry Input (Option A: If you create a dummy publisher) ---
+    # odom0: /odom/unfiltered # Topic from your dummy odometry publisher
+    # odom0_config: [false, false, false, # X, Y, Z
+    #                false, false, false, # Roll, Pitch, Yaw
+    #                true,  true,  false, # vx, vy, vz (vz=false for 2D)
+    #                false, false, true, # vroll, vpitch, vyaw
+    #                false, false, false] # ax, ay, az
+    # odom0_differential: false 
+    # odom0_relative: false
+    # odom0_queue_size: 10
+
+    # --- Twist Input (Option B: Fuse cmd_vel directly - less accurate) ---
+    # twist0: /cmd_vel_filtered # Use a filtered cmd_vel if available, or just /cmd_vel
+    # twist0_config: [false, false, false, # X, Y, Z
+    #                 false, false, false, # Roll, Pitch, Yaw
+    #                 true,  true,  false, # vx, vy, vz (vz=false for 2D)
+    #                 false, false, true, # vroll, vpitch, vyaw
+    #                 false, false, false] # ax, ay, az
+    # twist0_queue_size: 10
+
+
+    # --- Process Noise Covariance --- 
+    # Adjust these based on how much you trust your motion model (which is none without encoders)
+    # Higher values mean less trust. Start high.
+    process_noise_covariance: [ ... ] # Fill with appropriate diagonal values, start largeish (e.g., 0.1)
+
+    # --- Initial Estimate Covariance ---
+    initial_estimate_covariance: [ ... ] # Fill with appropriate diagonal values, start large (e.g., 1e-9, except for unused vars)
+
+    # --- Output ---
+    publish_tf: true # Let EKF publish the odom -> base_link transform

@@ -84,7 +84,7 @@ def generate_launch_description():
         executable='sllidar_node',
         name='sllidar_node',
         parameters=[{'serial_port': lidar_serial_port, 
-                     'serial_baudrate': 115200,  # Baud rate for C1 is usually 115200 or 256000
+                     'serial_baudrate': 460800,  # Baud rate for C1 is usually 115200 or 256000
                      'frame_id': 'laser_frame', # Must match your URDF link
                      'inverted': False, 
                      'angle_compensate': True}],
